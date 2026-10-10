@@ -7,6 +7,12 @@ attachments in a content-addressed object store, runs the coding agent inside
 an Incus system container, and opens a draft GitHub pull request for human
 review.
 
+AgentSlave is also the first working component in a broader 67daisies effort:
+small, composable infrastructure tools for teams that want to run essential
+software on hardware they control without adopting a hyperscaler or Kubernetes.
+The current product remains deliberately narrow; the ecosystem direction and
+boundaries are documented in [docs/PRODUCT.md](./docs/PRODUCT.md).
+
 This first draft uses one lightweight Incus container per run. It does not use
 Docker. The default image is a reusable `agentslave-worker-v4` image containing
 Codex, OpenCode, and ordinary developer tools. Codex is the default executor;
@@ -18,6 +24,7 @@ configured fallback.
 ```text
 apps/orchestrator/        Slack, GitHub, agent runner, worker and status API
 packages/object-store/    Aeomatic-derived SHA-256 immutable object store
+docs/                     Product contract, operating principles and roadmap
 ```
 
 ## First run
