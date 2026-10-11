@@ -135,6 +135,20 @@ A job is inputs, command, isolation requirements, resource requirements,
 timeout, outputs, and cleanup policy. AgentSlave, CI, image builds, and restore
 tests can share this contract without sharing their application state.
 
+### Hardware class and qualification report
+
+A hardware class declares expected device topology, firmware ranges,
+performance floors, thermal limits, compatible images, and qualification
+tests. A qualification report combines observed facts with evidence and a
+`pass`, `degraded`, or `quarantined` decision.
+
+### Lease and failure domain
+
+A lease is a time-bounded resource claim with an owner, cleanup policy, and
+recovery behavior. Failure domains describe correlated rack, power, switch,
+BMC-network, and storage risks so CI allocation and fleet rollout do not place
+every copy behind the same failure.
+
 ## The datacenter test
 
 An expert operating a rack should be able to:
@@ -161,3 +175,7 @@ only after the schemas are exercised on real hardware.
 AgentSlave remains its own application. It can later use `run` for isolated
 jobs, `doctor` for host evidence, and `ship` for deployment without owning any
 of those tools.
+
+The machine lifecycle and CI practices observed in tiny corp's public
+repositories are analyzed in
+[TINYCORP-OPERATIONS.md](./TINYCORP-OPERATIONS.md).

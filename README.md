@@ -15,7 +15,9 @@ boundaries are documented in [docs/PRODUCT.md](./docs/PRODUCT.md). The research
 behind that direction, including lessons from HashiCorp, SST, Anubis, T3, and
 tinygrad, is in [docs/BUILDER-RESEARCH.md](./docs/BUILDER-RESEARCH.md). The
 proposed bare-metal tools and their shared contracts are described in
-[docs/TOOLCHAIN.md](./docs/TOOLCHAIN.md).
+[docs/TOOLCHAIN.md](./docs/TOOLCHAIN.md). A source-based analysis of tiny
+corp's public machine lifecycle and hardware CI is in
+[docs/TINYCORP-OPERATIONS.md](./docs/TINYCORP-OPERATIONS.md).
 
 This first draft uses one lightweight Incus container per run. It does not use
 Docker. The default image is a reusable `agentslave-worker-v4` image containing

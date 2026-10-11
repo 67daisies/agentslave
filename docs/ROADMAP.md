@@ -42,6 +42,9 @@ health verification, and successful rollback.
 - Preview disk destruction, partitioning, networking, and boot changes.
 - Install through ISO, PXE, or an out-of-band management adapter.
 - Verify the resulting host and add its facts to a plain inventory file.
+- Match the host to a hardware class and run topology, performance, and thermal
+  qualification before marking it available.
+- Retain a structured qualification report and quarantine failed machines.
 - Make the entire flow non-interactive and suitable for CI.
 
 Acceptance: take one blank physical or virtual machine from power-on to a
@@ -75,7 +78,11 @@ and a nearly-full disk without undocumented intervention.
 
 - Manage a handful of hosts or a rack without introducing a consensus system.
 - Select hosts by declared hardware facts, role, accelerator, rack, or health.
+- Acquire time-bounded host and accelerator leases with cleanup and quarantine
+  behavior.
 - Apply bounded concurrency and preserve a per-host plan and audit trail.
+- Model rack, power, network, BMC, and storage failure domains for placement and
+  canary selection.
 - Explicit placement and failover policy rather than implicit scheduling.
 - Migration tooling between supported hosts and providers.
 
