@@ -2,13 +2,17 @@
 
 ## Mission
 
-Give a small business or small engineering team a credible way to run essential
-software on one or a few ordinary Linux servers without making a public cloud,
-Kubernetes, or a hosted control plane part of the application runtime.
+Build a family of small tools that turns raw servers into usable infrastructure
+without requiring a public cloud, Kubernetes, a hosted control plane, or a
+67daisies account. The same primitives should work for a small business with
+one rented machine and an expert operator bringing up a rack of bare-metal or
+GPU servers.
 
-The experience should feel closer to installing an appliance than assembling a
-platform. Operators declare what should run, preview the change, apply it, and
-retain enough state and documentation to recover the system without 67daisies.
+The experience should feel like a well-designed Unix toolchain rather than a
+platform. An operator can discover hardware, install an operating system,
+configure networking and storage, attach CI/CD, deploy workloads, diagnose the
+machine, and recover it. Each tool works alone, composes through documented
+files and commands, and leaves the machine understandable without 67daisies.
 
 AgentSlave is the first product in this direction. It automates a bounded
 software-maintenance workflow and proves the underlying operating model:
@@ -22,15 +26,21 @@ events, explicit human approval, and replaceable external integrations.
 - A local business that needs internal tools, automations, or data services.
 - A technical founder who can operate Linux but does not want infrastructure to
   become the product.
+- A datacenter or lab operator provisioning racks of heterogeneous bare-metal
+  and accelerator machines.
+- An open-source project that needs reproducible CI workers on hardware it owns.
 
-It is not initially designed for untrusted public multi-tenancy, thousands of
-hosts, or organizations that already need Kubernetes-scale scheduling.
+The initial implementation will still prove itself on one machine. It is not
+initially designed for untrusted public multi-tenancy or hyperscaler-scale
+scheduling, but its file formats and host contracts must not assume that a
+fleet has only one node.
 
 ## Product principles
 
-1. **The server keeps working without us.** A hosted 67daisies account may add
-   convenience later, but it must never be required for an installed workload
-   to boot, serve traffic, restore a backup, or be administered locally.
+1. **There is no account.** Installation, provisioning, deployment, CI/CD,
+   backup, restore, and administration work with local files and operator-owned
+   machines. Network services may be integrated, but none belongs to the
+   product's trust boundary.
 2. **One server is a complete topology.** Multi-host operation is an extension,
    not a prerequisite disguised as an entry-level architecture.
 3. **Boring state wins.** Prefer files, PostgreSQL, systemd, NixOS, Incus, SSH,
@@ -47,11 +57,17 @@ hosts, or organizations that already need Kubernetes-scale scheduling.
 8. **Secure defaults without security theatre.** Minimize exposed ports, scope
    credentials, encrypt transport, record privileged actions, and make unsafe
    development modes obvious.
-9. **No surprise metering.** Core self-hosted operation is useful without a
-   usage-based 67daisies bill. Optional paid services must have visible limits.
+9. **No metering.** The tools do not count hosts, cores, builds, deployments,
+   or users and do not phone home to enforce a commercial boundary.
 10. **Small tools, shared conventions.** Follow the HashiCorp product lesson,
     not its historical complexity: separate tools with a consistent CLI,
     configuration language, release process, and interoperability contract.
+11. **One machine and one rack use the same primitives.** Fleet operation adds
+    inventory, selection, and concurrency; it does not replace the single-host
+    execution model.
+12. **Expert operators keep the escape hatch.** Every operation has a verbose
+    mode, a machine-readable result, and an ordinary command or file that can
+    be inspected and reproduced by hand.
 
 ## Product boundaries
 
@@ -65,11 +81,34 @@ host/runtime contracts but should not become a general deployment platform.
 
 ### Host and deployment tool
 
-A future, separately versioned CLI should own server bootstrap, plans, NixOS
-generation changes, service installation, health checks, upgrades, and
-rollbacks. Its first supported target is one NixOS server reachable over SSH.
-The name is intentionally undecided until its command and package contracts are
-proven.
+A future, separately versioned CLI should own host discovery, bootstrap, plans,
+NixOS generation changes, service installation, health checks, upgrades, and
+rollbacks. Its first supported target is one NixOS server reachable over SSH;
+the same interface should later drive machines discovered through BMC,
+Redfish, IPMI, or PXE. The name is intentionally undecided until its command
+and package contracts are proven.
+
+### Image and bare-metal tool
+
+A small image tool should build, inspect, sign, and install reproducible host
+images. It should understand disks, boot mode, firmware facts, hardware class,
+and the boundary between destructive installation and reversible
+configuration. Provider APIs are adapters; the core target is a machine the
+operator can power cycle and reinstall.
+
+### CI/CD tool
+
+A repository-local tool should turn owned machines into CI workers and deploy
+artifacts to declared targets. GitHub, GitLab, and local Git are event sources,
+not control planes. Jobs use the same runner contract as AgentSlave, emit the
+same audit format, and can execute without a 67daisies service.
+
+### Inventory and diagnostics tool
+
+Inventory is a signed or versioned set of host facts: identity, BMC address,
+hardware, disks, accelerators, network, installed generation, workloads, and
+health. Diagnostics should work against one host, an inventory selection, or
+stdin and should always support structured output.
 
 ### Service catalog
 
@@ -77,39 +116,44 @@ Deployable services should be ordinary, reviewable packages with declared
 ports, volumes, secrets, health checks, backup hooks, restore hooks, and upgrade
 notes. A catalog is a distribution mechanism, not an opaque marketplace.
 
-### Optional hosted coordination
+### Integration adapters
 
-Remote inventory, notifications, encrypted backup storage, and team approvals
-may be offered later. Installed systems must degrade to local operation when
-that service is absent.
+DNS providers, object stores, Git forges, secret stores, notification systems,
+and hardware management protocols are replaceable adapters. Operators supply
+their own endpoints and credentials. No adapter may silently introduce a
+67daisies account or vendor-owned state.
 
 ## Architecture shape
 
 ```text
-operator CLI
-    -> plan and policy engine
-        -> SSH to one or more hosts
-            -> NixOS generation and systemd services
-            -> Incus workload boundary
-            -> PostgreSQL and content-addressed storage
-            -> local audit log, backup and restore hooks
+inventory + repository configuration
+    -> small command-line tools
+        -> inspect / image / provision / plan / apply / verify
+        -> build / test / release / deploy / rollback
+            -> SSH, Redfish/IPMI, PXE and Git adapters
+                -> NixOS generations and systemd services
+                -> Incus workload boundary
+                -> disks, networks and accelerator runtimes
+                -> local audit log, backup and restore hooks
 
 Slack / GitHub / future integrations
     -> AgentSlave
         -> the same host, runner and audit contracts
 ```
 
-The operator CLI is not a permanently connected control plane. It produces a
-plan, applies it through explicit host APIs, records the result, and can
-disconnect. The host owns its desired configuration and can be operated with
-standard NixOS, systemd, Incus, PostgreSQL, and SSH tools if the CLI disappears.
+The tools are not a permanently connected control plane. They read inventory
+and desired state, produce plans, apply through explicit host APIs, record
+results, and exit. Hosts remain operable with standard NixOS, systemd, Incus,
+PostgreSQL, SSH, and hardware-management tools if every 67daisies binary
+disappears.
 
 ## Commercial posture
 
-The open-source tools must be enough to run the system. Sustainable paid work
-can come from managed updates, encrypted off-site backups, fleet visibility,
-support, certified service packages, and a hosted approval/integration layer.
-The business should sell reduced operational burden, not artificial lock-in.
+The open-source tools are the product, not a client for a future account.
+Sustainable work can come from support, integration engineering, certified
+hardware and service packages, training, compatibility testing, and reference
+server images. The business should sell expertise and reliability, not control
+of the operator's machines or metadata.
 
 ## Naming
 

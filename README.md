@@ -13,7 +13,9 @@ software on hardware they control without adopting a hyperscaler or Kubernetes.
 The current product remains deliberately narrow; the ecosystem direction and
 boundaries are documented in [docs/PRODUCT.md](./docs/PRODUCT.md). The research
 behind that direction, including lessons from HashiCorp, SST, Anubis, T3, and
-tinygrad, is in [docs/BUILDER-RESEARCH.md](./docs/BUILDER-RESEARCH.md).
+tinygrad, is in [docs/BUILDER-RESEARCH.md](./docs/BUILDER-RESEARCH.md). The
+proposed bare-metal tools and their shared contracts are described in
+[docs/TOOLCHAIN.md](./docs/TOOLCHAIN.md).
 
 This first draft uses one lightweight Incus container per run. It does not use
 Docker. The default image is a reusable `agentslave-worker-v4` image containing

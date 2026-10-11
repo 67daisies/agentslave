@@ -35,6 +35,19 @@ Build the smallest separate CLI that can manage one existing Linux server.
 Acceptance: install and remove a stateless sample service with a previewed plan,
 health verification, and successful rollback.
 
+## Milestone 1.5: raw machine to managed host
+
+- Discover hardware through local boot facts, Redfish, or IPMI.
+- Build a reproducible NixOS image for a declared hardware class.
+- Preview disk destruction, partitioning, networking, and boot changes.
+- Install through ISO, PXE, or an out-of-band management adapter.
+- Verify the resulting host and add its facts to a plain inventory file.
+- Make the entire flow non-interactive and suitable for CI.
+
+Acceptance: take one blank physical or virtual machine from power-on to a
+verified, SSH-reachable NixOS host using checked-in configuration and no
+67daisies account.
+
 ## Milestone 2: service package contract
 
 - Define a versioned manifest for ports, domains, secrets, volumes, databases,
@@ -58,27 +71,31 @@ the exported configuration and backup set.
 Acceptance: survive a failed upgrade, a full host loss, an expired credential,
 and a nearly-full disk without undocumented intervention.
 
-## Milestone 4: small fleet
+## Milestone 4: rack and fleet
 
-- Manage a handful of hosts without introducing a consensus system.
+- Manage a handful of hosts or a rack without introducing a consensus system.
+- Select hosts by declared hardware facts, role, accelerator, rack, or health.
+- Apply bounded concurrency and preserve a per-host plan and audit trail.
 - Explicit placement and failover policy rather than implicit scheduling.
-- Optional hosted inventory and approval UI that is never on the runtime path.
 - Migration tooling between supported hosts and providers.
 
 Acceptance: move a stateful service between two providers and prove that loss
-of hosted coordination does not stop either host.
+of the operator workstation does not stop either host. Rebuild the inventory
+from the machines and checked-in configuration alone.
 
 ## Immediate engineering slice
 
-The next code change should implement `agentslave doctor` as the first stable
-operator contract. It should check:
+The infrastructure family starts outside AgentSlave. Specify and prototype a
+single raw-machine workflow:
 
-- PostgreSQL connectivity and migration level;
-- Incus availability, project, image, bridge, storage, and reaper timer;
-- free disk and inode headroom;
-- Slack and GitHub configuration without printing secrets;
-- Codex authentication status and configured model;
-- stale jobs, orphaned instances, and recent backup evidence.
+1. inspect a host through SSH or Redfish and emit versioned JSON facts;
+2. compare those facts with a checked-in NixOS host declaration;
+3. produce a plan covering boot mode, disks, partitions, network, image, and
+   destructive actions;
+4. install the machine and wait for it to return over SSH;
+5. verify the installed generation and write a local JSONL audit event.
 
-Human output must explain remediation. JSON output must be versioned so a future
-host CLI can consume it without scraping logs.
+The first acceptance fixture can be a VM, but the interface must model BMC
+identity and physical disks from the start. AgentSlave's future `doctor`
+command can consume the diagnostics contract; it is not the source of the
+bare-metal architecture.

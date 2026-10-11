@@ -6,10 +6,11 @@ choose a wedge, make a technical abstraction credible, distribute it, and earn
 the right to build a larger system.
 
 The conclusion is narrow: 67daisies should not begin by building another
-self-hosted PaaS. It should build a small, local-first operating tool that makes
-one ordinary server recoverable. Deployment is part of that workflow, but the
-product is operational confidence: inspect, plan, apply, verify, back up,
-restore, upgrade, and roll back without depending on a hosted control plane.
+self-hosted PaaS. It should build a family of small, local tools that turns raw
+machines into reproducible infrastructure. Deployment is part of that
+workflow, alongside imaging, hardware discovery, networking, CI/CD,
+diagnostics, backup, restore, upgrade, and rollback. There is no 67daisies
+account or hosted control plane.
 
 ## Comparative summary
 
@@ -215,14 +216,15 @@ make a container appear on a VPS.
 
 ## Proposed product thesis
 
-**67daisies gives a small team a boring, recoverable way to run essential
-software on boxes it controls.**
+**67daisies builds the operator toolbox for boxes you control: from one small
+business server to a rack of bare-metal or accelerator machines.**
 
-The first product should be a local CLI for one existing NixOS host. It should
-not require a daemon or account. A repository contains the desired services;
-the CLI connects over SSH, explains a plan, applies a NixOS generation,
-verifies service contracts, records an audit event, and leaves the host
-operable through standard tools.
+The first tool should be a local CLI for one existing NixOS host. A repository
+contains the desired services; the CLI connects over SSH, explains a plan,
+applies a NixOS generation, verifies service contracts, records an audit event,
+and leaves the host operable through standard tools. Later tools should image
+raw machines, manage inventory, attach CI workers, and operate a rack using the
+same host contract rather than introducing a central platform.
 
 The smallest complete workflow is:
 
@@ -250,8 +252,8 @@ service contract are the durable escape hatch.
 
 ## Product axioms
 
-1. **The box works without 67daisies.** No hosted service may be required to
-   boot, serve, back up, restore, or administer it.
+1. **There is no account.** No 67daisies service is required to discover,
+   image, boot, serve, build, deploy, back up, restore, or administer a box.
 2. **A restore is the proof of a backup.** Backup success without a periodic
    clean-host restore is an unverified claim.
 3. **Plans precede privilege.** Every mutation names restarts, migrations,
@@ -269,20 +271,19 @@ service contract are the durable escape hatch.
 
 ## What to build first
 
-Do not start a new platform repository until AgentSlave proves the operator
-contract. The next sequence should be:
+Do not turn AgentSlave into the platform. It is one future consumer of the same
+runner and host contracts. The next sequence should be:
 
-1. Implement `agentslave doctor --json` for PostgreSQL, Incus, disk, Slack,
-   GitHub, Codex authentication, stale jobs, orphaned instances, and backups.
-2. Add an encrypted backup command and a documented restore onto a disposable
-   host. Run that restore in CI or a scheduled destructive test.
-3. Extract only the host inspection, plan, execution, and audit interfaces that
-   are demonstrably generic.
-4. Create a separate CLI with `init`, `doctor`, `plan`, `apply`, `backup`,
-   `restore`, and `rollback` after those interfaces survive AgentSlave.
-5. Package only three workloads: a stateless service, a PostgreSQL-backed
-   service, and AgentSlave. Reject the catalog until all three pass a full host
-   loss exercise.
+1. Specify plain inventory, plan, result, and audit formats independent of any
+   product or daemon.
+2. Build one small bare-metal tool that discovers a machine, previews disk and
+   network changes, installs NixOS, verifies SSH, and writes inventory.
+3. Exercise the same flow against a virtual machine, a rented bare-metal
+   server, and a BMC-controlled physical host.
+4. Build CI execution and deployment as separate tools consuming the inventory
+   and result formats.
+5. Adapt AgentSlave to consume the runner and diagnostics contracts rather than
+   extracting the product family from AgentSlave internals.
 
 ## Ninety-day validation
 
@@ -304,20 +305,20 @@ feature requests: the last failed restore, surprise bill, expired certificate,
 abandoned VPS, dependency upgrade, or provider migration. If teams will not run
 a restore drill with us, they are not validating the product's core claim.
 
-## Sustainable business without hostage-taking
+## Sustainable work without hostage-taking
 
-Keep the core and service contract under a durable open-source license. Sell
-labor and confidence around the owned system:
+Keep the tools and contracts under a durable open-source license. If a business
+forms around them, sell labor and confidence around the owned system:
 
 - managed update channels and compatibility testing;
 - encrypted off-site backup storage and restore-drill reports;
-- fleet inventory, notifications, and team approval workflows;
 - certified service packages and migration support;
 - a supported reference server image, and later a known-good physical box;
 - response-time support contracts.
 
-The hosted product should observe and coordinate. It must not become the only
-place where desired state, decryption keys, or recovery instructions exist.
+These are services around the tools, not an account required by the tools.
+Desired state, keys, inventory, and recovery instructions remain entirely with
+the operator.
 
 ## Decision
 
