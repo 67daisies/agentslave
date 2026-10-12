@@ -17,7 +17,9 @@ tinygrad, is in [docs/BUILDER-RESEARCH.md](./docs/BUILDER-RESEARCH.md). The
 proposed bare-metal tools and their shared contracts are described in
 [docs/TOOLCHAIN.md](./docs/TOOLCHAIN.md). A source-based analysis of tiny
 corp's public machine lifecycle and hardware CI is in
-[docs/TINYCORP-OPERATIONS.md](./docs/TINYCORP-OPERATIONS.md).
+[docs/TINYCORP-OPERATIONS.md](./docs/TINYCORP-OPERATIONS.md). Engineering,
+licensing, sustainability, scale, and the Hetzner-first provider strategy are
+in [docs/ENGINEERING-INDEPENDENCE.md](./docs/ENGINEERING-INDEPENDENCE.md).
 
 This first draft uses one lightweight Incus container per run. It does not use
 Docker. The default image is a reusable `agentslave-worker-v4` image containing

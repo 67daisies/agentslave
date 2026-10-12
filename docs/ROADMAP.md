@@ -25,7 +25,11 @@ broken dependency using only checked-in documentation.
 
 Build the smallest separate CLI that can manage one existing Linux server.
 
+- Support Hetzner Cloud creation and Hetzner Robot rescue as the first provider
+  adapters.
 - Initialize a NixOS host over SSH without retaining a central daemon.
+- Compose pinned `nixos-anywhere` and `disko` rather than reimplementing their
+  installation and partitioning engines.
 - Inventory CPU, memory, disks, network exposure, generations, and workloads.
 - Produce a deterministic plan before changing the host.
 - Apply, verify, roll back, and emit a local audit record.
@@ -33,7 +37,8 @@ Build the smallest separate CLI that can manage one existing Linux server.
   they are genuinely generic; extract packages instead of importing the app.
 
 Acceptance: install and remove a stateless sample service with a previewed plan,
-health verification, and successful rollback.
+health verification, and successful rollback. Replace a Hetzner test host from
+checked-in configuration without using the web console.
 
 ## Milestone 1.5: raw machine to managed host
 

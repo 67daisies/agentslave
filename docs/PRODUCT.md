@@ -35,6 +35,11 @@ initially designed for untrusted public multi-tenancy or hyperscaler-scale
 scheduling, but its file formats and host contracts must not assume that a
 fleet has only one node.
 
+The first provider target is Hetzner Cloud and Hetzner dedicated servers. This
+is a product wedge, not a permanent dependency: provider behavior lives behind
+capability-oriented adapters, while host configuration, plans, evidence, and
+recovery remain provider-neutral.
+
 ## Product principles
 
 1. **There is no account.** Installation, provisioning, deployment, CI/CD,
@@ -154,6 +159,9 @@ Sustainable work can come from support, integration engineering, certified
 hardware and service packages, training, compatibility testing, and reference
 server images. The business should sell expertise and reliability, not control
 of the operator's machines or metadata.
+
+The sustainability and provider strategy is documented in
+[ENGINEERING-INDEPENDENCE.md](./ENGINEERING-INDEPENDENCE.md).
 
 ## Naming
 
