@@ -39,6 +39,9 @@ export class AgentRunner {
     prompt: string,
     files: string[] = [],
   ): Promise<AgentRun> {
+    if (!prompt.trim()) {
+      throw new Error("Agent prompt must not be empty");
+    }
     if (!this.config.authPath) {
       throw new Error(`${this.config.provider === "codex" ? "CODEX" : "OPENCODE"}_AUTH_PATH is not configured`);
     }
@@ -72,12 +75,20 @@ export class AgentRunner {
       for (const file of files) {
         command.push(this.config.provider === "codex" ? "--image" : "--file", file);
       }
-      command.push(prompt);
+      // Codex's --image option accepts one or more values, so a positional prompt
+      // after an image can be consumed as another image path. Use the documented
+      // stdin marker to make the prompt boundary unambiguous.
+      if (this.config.provider === "codex") {
+        command.push("--", "-");
+      } else {
+        command.push(prompt);
+      }
       const result = await executor.execResult(workspace.instanceName, command, {
         cwd: workspace.workingDirectory,
         env: this.config.provider === "codex"
           ? ["HOME=/root", "CODEX_HOME=/root/.codex"]
           : ["OPENCODE_DISABLE_AUTOUPDATE=true", "HOME=/root"],
+        ...(this.config.provider === "codex" ? { input: prompt } : {}),
         timeoutMs: this.config.timeoutMs,
       });
       if (result.exitCode !== 0) {
